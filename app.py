@@ -1,33 +1,66 @@
 import streamlit as st
 import time
 
-st.set_page_config(page_title="Student Study App", layout="centered")
+st.set_page_config(page_title="10th Study App", layout="wide")
 
-st.title("📘 Charan's Study & Quiz App")
+st.title("📘 Charan's 10th Class Study + Quiz App")
 
-# SESSION STATE
-if "tasks" not in st.session_state:
-    st.session_state.tasks = []
+# ---------------- DATA ----------------
+data = {
+    "Maths": {
+        "syllabus": ["Algebra", "Trigonometry", "Geometry"],
+        "questions": [
+            ("2 + 2 = ?", ["3", "4", "5"], "4"),
+            ("5 × 3 = ?", ["10", "15", "20"], "15"),
+            ("Square root of 16?", ["2", "4", "6"], "4")
+        ]
+    },
+    "Social": {
+        "syllabus": ["History", "Geography", "Civics"],
+        "questions": [
+            ("Capital of India?", ["Delhi", "Mumbai", "Chennai"], "Delhi"),
+            ("India is a ____ country?", ["Monarchy", "Democratic", "Dictatorship"], "Democratic")
+        ]
+    },
+    "Physics": {
+        "syllabus": ["Motion", "Force", "Work"],
+        "questions": [
+            ("Unit of force?", ["Newton", "Joule", "Watt"], "Newton")
+        ]
+    },
+    "Chemistry": {
+        "syllabus": ["Atoms", "Molecules", "Reactions"],
+        "questions": [
+            ("H2O is?", ["Water", "Oxygen", "Hydrogen"], "Water")
+        ]
+    }
+}
 
-# SUBJECTS
-subjects = ["Maths", "Physics", "Chemistry", "Biology", "Social", "English"]
-subject = st.selectbox("📚 Select Subject (10th Class)", subjects)
+# ---------------- SUBJECT ----------------
+subject = st.selectbox("📚 Select Subject", list(data.keys()))
 
-st.write(f"Selected Subject: **{subject}**")
+# ---------------- TABS ----------------
+tab1, tab2, tab3 = st.tabs(["📖 Syllabus", "⏱️ Timer", "❓ Quiz"])
 
-# SIDEBAR MENU
-menu = st.sidebar.selectbox("Menu", ["⏱️ Study Timer", "📝 Tasks", "❓ Quiz"])
+# ---------------- SYLLABUS ----------------
+with tab1:
+    st.subheader(f"{subject} Syllabus")
 
-# TIMER
-if menu == "⏱️ Study Timer":
-    st.header("Study Timer")
+    for topic in data[subject]["syllabus"]:
+        st.write("•", topic)
 
-    study_time = st.number_input("Study Time (minutes)", 1, 60, 1)
-    break_time = st.number_input("Break Time (minutes)", 1, 30, 1)
+# ---------------- TIMER ----------------
+with tab2:
+    st.subheader("Study Timer")
 
-    if st.button("Start Timer"):
-        st.info("Study session started...")
+    study_time = st.number_input("Study Time (minutes)", 1, 120, 1)
+    break_time = st.number_input("Break Time (minutes)", 1, 60, 1)
 
+    if st.button("Start Study Session"):
+
+        st.info("Study started...")
+
+        # Study timer
         seconds = study_time * 60
         placeholder = st.empty()
 
@@ -37,56 +70,43 @@ if menu == "⏱️ Study Timer":
             time.sleep(1)
             seconds -= 1
 
-        st.success("🎉 Study completed!")
+        st.success("🎉 Study Completed!")
 
-# TASKS
-elif menu == "📝 Tasks":
-    st.header("Study Tasks")
+        # Alert sound (browser bell substitute)
+        st.balloons()
 
-    task = st.text_input("Enter topic")
+        st.info("☕ Break Started")
 
-    if st.button("Add Task"):
-        if task:
-            st.session_state.tasks.append({"task": task, "done": False})
+        # Break timer
+        seconds = break_time * 60
+        placeholder2 = st.empty()
 
-    for i, t in enumerate(st.session_state.tasks):
-        col1, col2 = st.columns([3,1])
+        while seconds > 0:
+            mins, secs = divmod(seconds, 60)
+            placeholder2.markdown(f"### ☕ Break Time: {mins:02d}:{secs:02d}")
+            time.sleep(1)
+            seconds -= 1
 
-        with col1:
-            st.write(t["task"])
+        st.success("✅ Break Finished!")
 
-        with col2:
-            if st.button("Done", key=i):
-                st.session_state.tasks[i]["done"] = True
+# ---------------- QUIZ ----------------
+with tab3:
+    st.subheader(f"{subject} Quiz")
 
-    st.subheader("Completed Topics")
-    for t in st.session_state.tasks:
-        if t["done"]:
-            st.write("✔", t["task"])
+    questions = data[subject]["questions"]
+    score = 0
 
-# QUIZ
-elif menu == "❓ Quiz":
-    st.header("Quiz Section")
+    for i, (q, options, correct) in enumerate(questions):
 
-    questions = {
-        "Maths": [("2+2=?", ["3","4","5"], "4")],
-        "Physics": [("Unit of force?", ["Newton","Joule"], "Newton")]
-    }
+        st.write(f"Q{i+1}: {q}")
+        ans = st.radio("Choose:", options, key=f"{subject}_{i}")
 
-    if subject in questions:
-        score = 0
-        q_list = questions[subject]
+        if st.button(f"Submit Q{i+1}", key=f"submit_{i}"):
+            if ans == correct:
+                st.success("Correct ✅")
+                score += 1
+            else:
+                st.error("Wrong ❌")
 
-        for i, (q, options, correct) in enumerate(q_list):
-            st.write(q)
-            ans = st.radio("Choose", options, key=i)
-
-            if st.button("Submit", key=f"b{i}"):
-                if ans == correct:
-                    st.success("Correct")
-                    score += 1
-                else:
-                    st.error("Wrong")
-
-        if st.button("Final Score"):
-            st.info(f"Score: {score}/{len(q_list)}")
+    if st.button("Show Final Score"):
+        st.info(f"Score: {score}/{len(questions)}")
