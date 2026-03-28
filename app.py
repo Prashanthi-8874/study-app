@@ -11,8 +11,7 @@ data = {
         "syllabus": ["Algebra", "Trigonometry", "Geometry"],
         "questions": [
             ("2 + 2 = ?", ["3", "4", "5"], "4"),
-            ("5 × 3 = ?", ["10", "15", "20"], "15"),
-            ("Square root of 16?", ["2", "4", "6"], "4")
+            ("5 × 3 = ?", ["10", "15", "20"], "15")
         ]
     },
     "Social": {
@@ -27,14 +26,17 @@ data = {
         "questions": [
             ("Unit of force?", ["Newton", "Joule", "Watt"], "Newton")
         ]
-    },
-    "Chemistry": {
-        "syllabus": ["Atoms", "Molecules", "Reactions"],
-        "questions": [
-            ("H2O is?", ["Water", "Oxygen", "Hydrogen"], "Water")
-        ]
     }
 }
+
+# ---------------- AUDIO (UPLOAD alarm.mp3 in repo) ----------------
+def play_sound():
+    try:
+        audio_file = open("alarm.mp3", "rb")
+        audio_bytes = audio_file.read()
+        st.audio(audio_bytes, format="audio/mp3")
+    except:
+        st.warning("⚠️ Upload alarm.mp3 in GitHub repo for sound")
 
 # ---------------- SUBJECT ----------------
 subject = st.selectbox("📚 Select Subject", list(data.keys()))
@@ -45,7 +47,6 @@ tab1, tab2, tab3 = st.tabs(["📖 Syllabus", "⏱️ Timer", "❓ Quiz"])
 # ---------------- SYLLABUS ----------------
 with tab1:
     st.subheader(f"{subject} Syllabus")
-
     for topic in data[subject]["syllabus"]:
         st.write("•", topic)
 
@@ -58,9 +59,9 @@ with tab2:
 
     if st.button("Start Study Session"):
 
-        st.info("Study started...")
+        st.info("📖 Study Started...")
 
-        # Study timer
+        # Study Timer
         seconds = study_time * 60
         placeholder = st.empty()
 
@@ -70,14 +71,17 @@ with tab2:
             time.sleep(1)
             seconds -= 1
 
-        st.success("🎉 Study Completed!")
+        st.success("🎉 Study Time Completed!")
 
-        # Alert sound (browser bell substitute)
+        # Siren Alert
         st.balloons()
+        st.warning("⏰ TIME UP! Take a break")
 
+        play_sound()
+
+        # Break Timer
         st.info("☕ Break Started")
 
-        # Break timer
         seconds = break_time * 60
         placeholder2 = st.empty()
 
@@ -88,6 +92,8 @@ with tab2:
             seconds -= 1
 
         st.success("✅ Break Finished!")
+        st.balloons()
+        play_sound()
 
 # ---------------- QUIZ ----------------
 with tab3:
